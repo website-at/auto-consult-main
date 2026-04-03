@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AutoConsult Pro">
+    <title>Automotive Consulting Platform</title>
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23e94560' width='100' height='100'/><text y='75' font-size='70' fill='white' font-family='Arial' text-anchor='middle' x='50'>🚗</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #e94560;
+            --accent-light: #ff6b6b;
+            --text: #f1f1f1;
+            --text-dim: #a0a0a0;
+            --bg: #0f0f1e;
+            --card-bg: #1f1f3a;
+            --border: #2a2a4a;
+            --success: #06ffa5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(45deg, #0f0f1e 0%, #1a1a2e 50%, #16213e 100%);
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(233, 69, 96, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(6, 255, 165, 0.08) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(5deg); }
+            66% { transform: translate(-20px, 20px) rotate(-5deg); }
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(15, 15, 30, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .upload-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-btn:hover {
+            background: var(--accent-light);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+        }
+
+        .upload-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .upload-btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        /* Main Layout */
+        .container {
+            display: flex;
+            margin-top: 80px;
+            height: calc(100vh - 80px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background: rgba(31, 31, 58, 0.8);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--success);
+        }
+
+        .nav-item {
+            padding: 1rem 1.25rem;
+            margin-bottom: 0.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .nav-item:hover {
+            background: rgba(233, 69, 96, 0.1);
+            border-left-color: var(--accent);
+            transform: translateX(5px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, rgba(233, 69, 96, 0.2), transparent);
+            border-left-color: var(--accent);
+            font-weight: 600;
+        }
+
+        .nav-item-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-item-desc {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem 3rem;
+            overflow-y: auto;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--text), var(--text-dim));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+        }
+
+        /* Value Chain Cards */
+        .value-chain-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .vc-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vc-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .vc-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .vc-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            border-color: var(--accent);
+        }
+
+        .vc-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .vc-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--success);
+        }
+
+        .vc-description {
+            color: var(--text-dim);
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+
+        .vc-details {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .detail-item {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .detail-item::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+        }
+
+        /* Case Study Cards */
+        .case-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .case-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .case-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(233, 69, 96, 0.2);
+            border-color: var(--accent);
+        }
+
+        .case-number {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .case-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .case-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-tag {
+            background: rgba(6, 255, 165, 0.1);
+            color: var(--success);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .case-problem {
+            background: rgba(233, 69, 96, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--accent);
+        }
+
+        .case-solution {
+            background: rgba(6, 255, 165, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--success);
+        }
+
+        .case-label {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .expand-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .expand-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* Journey Map */
+        .journey-map {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            overflow-x: auto;
+        }
+
+        .journey-timeline {
+            display: flex;
+            gap: 2rem;
+            min-width: 1200px;
+            position: relative;
+            padding: 2rem 0;
+        }
+
+        .journey-timeline::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+        }
+
+        .journey-step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .journey-dot {
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+        }
+
+        .journey-label {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--success);
+        }
+
+        .journey-desc {
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            max-width: 900px;
+            width: 100%;
+            padding: 3rem;
+            position: relative;
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 2rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--accent);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-light);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block !important;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: -320px;
+                top: 80px;
+                height: calc(100vh - 80px);
+                z-index: 999;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .value-chain-grid,
+            .case-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+
+        .framework-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .framework-tag {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .framework-tag:hover {
+            background: rgba(233, 69, 96, 0.1);
+            border-color: var(--accent);
+        }
+
+        /* Home Section Styles */
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+        }
+
+        .hero-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-dim);
+            margin-bottom: 3rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .data-status {
+            background: rgba(6, 255, 165, 0.1);
+            border: 1px solid var(--success);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .data-status.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <header>
+        <div class="logo">AutoConsult Pro</div>
+        <button class="menu-toggle" onclick="toggleSidebar()" style="display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; padding: 0.5rem;">☰</button>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <h3>Navigation</h3>
+            <div class="nav-item active" onclick="showSection('home')">
+                <div class="nav-item-title">🏠 Home</div>
+                <div class="nav-item-desc">Platform Overview</div>
+            </div>
+            <div class="nav-item" onclick="showSection('value-chain')">
+                <div class="nav-item-title">🔗 Value Chain</div>
+                <div class="nav-item-desc">Complete Automotive Ecosystem</div>
+            </div>
+            <div class="nav-item" onclick="showSection('customer-journey')">
+                <div class="nav-item-title">🚗 Customer Journey</div>
+                <div class="nav-item-desc">End-to-End Experience Mapping</div>
+            </div>
+            <div class="nav-item" onclick="showSection('india-insights')">
+                <div class="nav-item-title">🇮🇳 India Market Insights</div>
+                <div class="nav-item-desc">Dealerships & Distribution</div>
+            </div>
+            <div class="nav-item" onclick="showSection('case-studies')">
+                <div class="nav-item-title">💼 Case Studies</div>
+                <div class="nav-item-desc">Top 50 Consulting Projects</div>
+            </div>
+            <div class="nav-item" onclick="showSection('frameworks')">
+                <div class="nav-item-title">📊 Frameworks & Tools</div>
+                <div class="nav-item-desc">Consulting Methodologies</div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <!-- Home Section -->
+            <section id="home" class="content-section active">
+                <div class="hero">
+                    <h1 class="hero-title">Automotive Consulting Platform</h1>
+                    <p class="hero-subtitle">20+ Years of Industry Expertise | Big Four & MBB Experience</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">50+</div>
+                        <div class="stat-label">Case Studies</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">8</div>
+                        <div class="stat-label">Value Chain Stages</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">15+</div>
+                        <div class="stat-label">Frameworks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Practical Focus</div>
+                    </div>
+                </div>
+
+                <div class="vc-card" style="margin-top: 3rem;">
+                    <h2 class="vc-title">Welcome to Your Automotive Consulting Resource</h2>
+                    <p class="vc-description">
+                        This platform brings together two decades of automotive consulting experience from Big Four firms and top-tier strategy consultancies (McKinsey, Bain, BCG). Whether you're new to the automotive industry or looking to deepen your expertise, you'll find:
+                    </p>
+                    <div class="vc-details">
+                        <div class="detail-item"><strong>Complete Value Chain Analysis:</strong> From R&D to after-sales, understand how every stage creates value</div>
+                        <div class="detail-item"><strong>Real-World Case Studies:</strong> Problem statements, solutions, frameworks, and deliverables from actual consulting engagements</div>
+                        <div class="detail-item"><strong>India Market Context:</strong> Practical insights on dealerships, inventory management, and distribution networks</div>
+                        <div class="detail-item"><strong>Customer Journey Mapping:</strong> How consumers interact with the automotive ecosystem</div>
+                        <div class="detail-item"><strong>Proven Frameworks:</strong> The exact methodologies used by top consulting firms</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Value Chain Section -->
+            <section id="value-chain" class="content-section">
+                <div class="section-header">
+                    <h1 class="section-title">Automotive Value Chain</h1>
+                    <p class="section-subtitle">Understanding the complete ecosystem from concept to customer</p>
+                </div>
+
+                <div class="value-chain-grid" id="valueChainGrid">
+                    <!-- Value chain cards will be populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Customer Journey Section -->
+            <section id="customer-journey" class="content-section">
+                <div class="section-header">
+                    <h1 class="section-title">Customer Journey</h1>
+                    <p class="section-subtitle">Mapping the complete automotive purchase and ownership experience</p>
+                </div>
+
+                <div class="journey-map">
+                    <h3 style="margin-bottom: 2rem; color: var(--success);">Complete Customer Lifecycle</h3>
+                    <div class="journey-timeline">
+                        <div class="journey-step">
+                            <div class="journey-dot"></div>
+                            <div class="journey-label">Awareness</div>
+                            <div class="journey-desc">Research & Brand Discovery</div>
+                        </div>
+                        <div class="journey-step">
+                            <div class="journey-dot"></div>
+                            <div class="journey-label">Consideration</div>
+                            <div class="journey-desc">Comparison & Configuration</div>
+                        </div>
+                        <div class="journey-step">
+                            <div class="journey-dot"></div>
+                            <div class="journey-label">Test Drive</div>
+                            <div class="journey-desc">Physical Experience</div>
+                        </div>
+                        <div class="journey-step">
+                            <div class="journey-dot"></div>
+                            <div class="journey-label">Purchase</div>
+                            <div class="journey-desc">Financing & Documentation</div>
+                        </div>
+                        <div class="journey-step">
+                            <div class="journey-dot"></div>
+                            <div class="journey-label">Delivery</div>
+                            <div class="journey-desc">Handover & Onboarding</div>
+                        </div>
+                        <div class="journey-step">
+                            <div class="journey-dot"></div>
+                            <div class="journey-label">Ownership</div>
+                            <div class="journey-desc">Service & Maintenance</div>
+                        </div>
+                        <div class="journey-step">
+                            <div class="journey-dot"></div>
+                            <div class="journey-label">Loyalty</div>
+                            <div class="journey-desc">Repeat Purchase</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="value-chain-grid" id="journeyDetails">
+                    <!-- Journey details will be populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- India Insights Section -->
+            <section id="india-insights" class="content-section">
+                <div class="section-header">
+                    <h1 class="section-title">India Market Insights</h1>
+                    <p class="section-subtitle">Dealership networks, inventory management, and distribution models</p>
+                </div>
+
+                <div class="value-chain-grid" id="indiaInsights">
+                    <!-- India insights will be populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Case Studies Section -->
+            <section id="case-studies" class="content-section">
+                <div class="section-header">
+                    <h1 class="section-title">Top 50 Case Studies</h1>
+                    <p class="section-subtitle">Real consulting engagements with problems, solutions, and frameworks</p>
+                </div>
+
+                <div class="filters">
+                    <button class="filter-btn active" onclick="filterCases('all')">All Cases</button>
+                    <button class="filter-btn" onclick="filterCases('strategy')">Strategy</button>
+                    <button class="filter-btn" onclick="filterCases('operations')">Operations</button>
+                    <button class="filter-btn" onclick="filterCases('digital')">Digital Transformation</button>
+                    <button class="filter-btn" onclick="filterCases('sales')">Sales & Marketing</button>
+                </div>
+
+                <div class="case-grid" id="caseStudiesGrid">
+                    <!-- Case studies will be populated by JavaScript -->
+                </div>
+            </section>
+
+            <!-- Frameworks Section -->
+            <section id="frameworks" class="content-section">
+                <div class="section-header">
+                    <h1 class="section-title">Consulting Frameworks</h1>
+                    <p class="section-subtitle">Proven methodologies used in automotive consulting</p>
+                </div>
+
+                <div class="value-chain-grid" id="frameworksGrid">
+                    <!-- Frameworks will be populated by JavaScript -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for Case Study Details -->
+    <div class="modal" id="caseModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        // Data Storage
+        let appData = {
+            valueChain: [],
+            caseStudies: [],
+            journeySteps: [],
+            indiaInsights: [],
+            frameworks: []
+        };
+
+        // Initialize with default data
+        function initializeData() {
+            appData.valueChain = [
+                {
+                    icon: '🔬',
+                    title: 'Research & Development',
+                    description: 'The journey begins in R&D labs where engineers and designers conceptualize the next generation of vehicles. This stage involves market research, trend analysis, technology scouting, and prototype development.',
+                    details: [
+                        'Market Research: Understanding customer needs, competitive landscape, and emerging trends',
+                        'Concept Design: Sketching, clay modeling, and digital 3D design',
+                        'Engineering: Powertrain development, chassis design, safety systems',
+                        'Testing & Validation: Crash tests, durability testing, emissions compliance',
+                        'Timeline: 3-5 years for a new vehicle platform'
+                    ],
+                    example: 'Example: Tata Motors developing the Nexon EV required extensive battery testing in Indian climate conditions, achieving a range of 312 km while meeting local cost expectations.'
+                },
+                {
+                    icon: '⚙️',
+                    title: 'Supply Chain & Procurement',
+                    description: 'Managing thousands of components from global suppliers requires sophisticated coordination. Just-in-time delivery, quality control, and cost optimization are critical.',
+                    details: [
+                        'Tier-1 Suppliers: Direct suppliers like Bosch, Continental providing major systems',
+                        'Tier-2/3 Suppliers: Component manufacturers for smaller parts',
+                        'Sourcing Strategy: Local vs. global sourcing decisions',
+                        'Inventory Management: Balancing stock levels to minimize costs',
+                        'Logistics: Transportation, warehousing, customs clearance'
+                    ],
+                    example: 'Example: Maruti Suzuki sources 95%+ components locally, working with 400+ Indian suppliers, reducing costs by 20-30% compared to imports.'
+                },
+                {
+                    icon: '🏭',
+                    title: 'Manufacturing',
+                    description: 'Modern automotive manufacturing combines robotics, lean production, and skilled labor. Quality control at every station ensures vehicles meet specifications.',
+                    details: [
+                        'Body Shop: Stamping and welding car bodies (80% automated)',
+                        'Paint Shop: Multi-layer coating for durability and aesthetics',
+                        'Assembly Line: Installing engine, transmission, interiors, electronics',
+                        'Quality Gates: Inspections at critical checkpoints',
+                        'Production Rate: 40-60 vehicles per hour in major plants'
+                    ],
+                    example: 'Example: Hyundai\'s Chennai plant produces 70,000 vehicles monthly across multiple models, with industry-leading quality metrics (32 defects per 100 vehicles).'
+                },
+                {
+                    icon: '📦',
+                    title: 'Logistics & Distribution',
+                    description: 'Moving vehicles from factory to dealerships involves rail, road, and sea transport. Efficient logistics minimize damage and reduce time-to-market.',
+                    details: [
+                        'Primary Transport: Factory to regional distribution centers',
+                        'Secondary Transport: Distribution centers to dealerships',
+                        'Vehicle Inspection: Pre-delivery inspections (PDI)',
+                        'Stock Yards: Temporary storage at ports and distribution hubs',
+                        'Lead Time: 7-15 days from production to dealer lot'
+                    ],
+                    example: 'Example: Maruti uses dedicated car carriers (10-12 vehicles each) and owns India\'s largest private freight fleet, delivering to 3,500+ touchpoints nationwide.'
+                },
+                {
+                    icon: '🏢',
+                    title: 'Dealer Network & Sales',
+                    description: 'Dealerships are the face of the brand, handling customer interactions, test drives, financing, and vehicle delivery. In India, this is a franchise model.',
+                    details: [
+                        'Dealership Types: Tier-1 cities (large showrooms), Tier-2/3 (compact formats)',
+                        'Sales Process: Inquiry → Test Drive → Quotation → Booking → Delivery',
+                        'Financing: 70% of cars sold with auto loans or leases',
+                        'Trade-ins: Accepting used vehicles as down payment',
+                        'Digital Integration: Online configurators, virtual showrooms'
+                    ],
+                    example: 'Example: A typical Hyundai dealership in Delhi invests ₹10-15 crores, sells 100-150 vehicles monthly, and employs 30-50 people across sales and service.'
+                },
+                {
+                    icon: '🔧',
+                    title: 'After-Sales Service',
+                    description: 'Service centers maintain vehicles through periodic maintenance, repairs, and warranty work. This is often more profitable than new car sales.',
+                    details: [
+                        'Periodic Maintenance: Oil changes, filter replacements (every 10,000 km)',
+                        'Warranty Repairs: Covered for 2-5 years or 100,000 km',
+                        'Genuine Parts: OEM parts vs. aftermarket alternatives',
+                        'Service Packages: Prepaid maintenance plans',
+                        'Revenue Mix: 40-60% of dealer revenue comes from after-sales'
+                    ],
+                    example: 'Example: Maruti\'s "Service Made Easy" program offers doorstep service, 24/7 roadside assistance, and express service in under 2 hours for routine jobs.'
+                },
+                {
+                    icon: '♻️',
+                    title: 'Remarketing & Disposal',
+                    description: 'End-of-life vehicle management includes used car sales, recycling, and disposal. This circular economy approach is growing in importance.',
+                    details: [
+                        'Certified Pre-Owned: Manufacturer-backed used car programs',
+                        'Trade-in Programs: Accepting old vehicles for new purchases',
+                        'Auctions: Bulk sales to used car dealers',
+                        'Recycling: Recovering metals, plastics, glass',
+                        'Scrappage Incentives: Government programs for old vehicle retirement'
+                    ],
+                    example: 'Example: Maruti True Value sells 450,000 used cars annually through 550+ outlets, offering warranties and exchange programs, creating a complete lifecycle loop.'
+                },
+                {
+                    icon: '📊',
+                    title: 'Digital & Customer Experience',
+                    description: 'Modern automotive companies are becoming tech companies, using data analytics, connected vehicles, and digital platforms to enhance customer experience.',
+                    details: [
+                        'Connected Vehicles: Telematics, remote diagnostics, OTA updates',
+                        'Mobile Apps: Service booking, vehicle tracking, roadside assistance',
+                        'Customer Data: Analytics for personalized marketing and service',
+                        'Digital Marketing: Social media, influencers, content marketing',
+                        'E-commerce: Online booking, home delivery, virtual showrooms'
+                    ],
+                    example: 'Example: Tata Motors\' "iRA" connected car platform provides real-time diagnostics, remote AC control, geofencing alerts, and predictive maintenance for Nexon and Harrier models.'
+                }
+            ];
+
+            appData.journeySteps = [
+                {
+                    icon: '🔍',
+                    title: 'Awareness & Research',
+                    description: 'The customer journey begins months before purchase. Buyers research online, watch reviews, and compare models.',
+                    details: [
+                        'Digital Research: 85% of buyers start online, spending 15+ hours researching',
+                        'Influencer Reviews: YouTube, Instagram, automotive websites',
+                        'Word-of-Mouth: Family and friend recommendations heavily influence',
+                        'Brand Perception: Previous ownership experience, brand reputation',
+                        'Touchpoints: Manufacturer websites, third-party portals (CarWale, CarDekho)'
+                    ]
+                },
+                {
+                    icon: '🎯',
+                    title: 'Consideration & Shortlisting',
+                    description: 'Buyers narrow down to 2-3 models based on budget, features, brand, and use case.',
+                    details: [
+                        'Budget Allocation: Monthly EMI vs. down payment calculation',
+                        'Feature Comparison: Safety, fuel efficiency, space, technology',
+                        'Use Case Matching: City commute, highway travel, family size',
+                        'Segment Selection: Hatchback, sedan, SUV, EV',
+                        'Dealer Visits: 2-3 dealership visits before purchase decision'
+                    ]
+                },
+                {
+                    icon: '🚗',
+                    title: 'Test Drive & Experience',
+                    description: 'The test drive is a critical moment of truth, where buyers experience the vehicle firsthand.',
+                    details: [
+                        'Scheduled Visits: Booking test drives via phone/online',
+                        'Vehicle Walkaround: Sales consultant explains features',
+                        'Drive Experience: 20-30 minute test drive on various road conditions',
+                        'Feature Demonstration: Infotainment, safety features, comfort',
+                        'Competitive Comparison: Sometimes back-to-back test drives'
+                    ]
+                },
+                {
+                    icon: '💳',
+                    title: 'Purchase & Financing',
+                    description: 'Finalizing the deal involves negotiations, paperwork, financing, and insurance.',
+                    details: [
+                        'Price Negotiation: Discounts, exchange bonus, corporate benefits',
+                        'Financing Options: Bank loan, manufacturer finance, leasing',
+                        'Insurance: Comprehensive vs. third-party, add-on covers',
+                        'Accessories: Seat covers, floor mats, parking sensors',
+                        'Documentation: 15-20 documents including ID, address proof, income proof'
+                    ]
+                },
+                {
+                    icon: '🎁',
+                    title: 'Delivery & Handover',
+                    description: 'Vehicle delivery is a ceremonial moment, with thorough orientation and documentation.',
+                    details: [
+                        'Delivery Timeline: 7-45 days depending on model availability',
+                        'Pre-Delivery Inspection: Checking for defects, accessories installation',
+                        'Handover Ceremony: Traditional rituals (coconut breaking), photos',
+                        'Feature Orientation: 30-60 minute walkthrough of all features',
+                        'Documentation: Registration certificate, insurance, warranty booklet'
+                    ]
+                },
+                {
+                    icon: '🔧',
+                    title: 'Ownership & Service',
+                    description: 'Post-purchase, customers interact with service centers for maintenance and repairs.',
+                    details: [
+                        'First Service: Free, at 1,000-1,500 km or 1 month',
+                        'Periodic Maintenance: Every 10,000 km or 6 months',
+                        'Warranty Periods: 2-5 years or 50,000-100,000 km',
+                        'Service Costs: ₹3,000-8,000 for routine service',
+                        'Customer Retention: Prepaid service packages, loyalty programs'
+                    ]
+                },
+                {
+                    icon: '🔄',
+                    title: 'Upgrade & Loyalty',
+                    description: 'The final stage is upgrading to a new vehicle, typically after 3-7 years of ownership.',
+                    details: [
+                        'Ownership Cycle: Average 5-6 years in India',
+                        'Exchange Programs: Old car evaluation, exchange bonus',
+                        'Brand Loyalty: 40-50% buy same brand for next vehicle',
+                        'Upgrade Triggers: Growing family, increased income, new technology',
+                        'Referral Programs: Incentives for referring friends/family'
+                    ]
+                }
+            ];
+
+            appData.indiaInsights = [
+                {
+                    icon: '🏪',
+                    title: 'Dealership Structure',
+                    description: 'Understanding the Indian dealership model and investment requirements.',
+                    details: [
+                        '3S/4S Model: Sales, Service, Spares (+ Surveys in 4S)',
+                        'Investment: ₹5-20 crores depending on city tier and brand',
+                        'Dealership Density: 1 dealership per 200,000-500,000 population',
+                        'Franchise Agreement: 5-10 year contracts with renewal options',
+                        'Territory Rights: Exclusive geographic coverage'
+                    ]
+                },
+                {
+                    icon: '📊',
+                    title: 'Inventory Management',
+                    description: 'How dealers manage stock levels and reduce carrying costs.',
+                    details: [
+                        'Stock Days: 25-40 days average inventory',
+                        'Fast vs. Slow Movers: Popular variants vs. niche configurations',
+                        'Financing Costs: 8-12% annual interest on inventory',
+                        'Aging Stock: Discounts increase after 90 days',
+                        'Pre-bookings: 30-50% of sales are advance bookings'
+                    ]
+                },
+                {
+                    icon: '🚚',
+                    title: 'Distribution Networks',
+                    description: 'The logistics of moving vehicles across India\'s vast geography.',
+                    details: [
+                        'Manufacturing Hubs: Gujarat (Maruti, Tata), Tamil Nadu (Hyundai, Ford)',
+                        'Stockyards: Regional distribution centers in 8-10 locations',
+                        'Transport Methods: 70% road, 25% rail, 5% coastal shipping',
+                        'Rural Penetration: Mobile showrooms, periodic exhibitions',
+                        'Delivery Timeline: 3-7 days metro cities, 10-20 days rural areas'
+                    ]
+                },
+                {
+                    icon: '💰',
+                    title: 'Dealer Economics',
+                    description: 'Understanding profitability drivers for automotive dealerships.',
+                    details: [
+                        'Margins: 3-5% on new vehicle sales',
+                        'Revenue Mix: 50-60% new cars, 40-50% service and parts',
+                        'ROI: 15-20% annual return on investment',
+                        'Incentives: Quarterly performance bonuses from manufacturers',
+                        'Break-even: 60-80 vehicles per month for average dealership'
+                    ]
+                },
+                {
+                    icon: '🌐',
+                    title: 'Digital Integration',
+                    description: 'How technology is transforming the Indian automotive retail landscape.',
+                    details: [
+                        'Online Platforms: 40% of customers book online before dealer visit',
+                        'Lead Management: CRM systems track customer journey',
+                        'Virtual Showrooms: 360° views, AR features',
+                        'Home Delivery: Growing trend in metro cities',
+                        'Digital Payments: UPI, net banking for bookings and EMI'
+                    ]
+                },
+                {
+                    icon: '🏆',
+                    title: 'Market Leaders',
+                    description: 'Top performers in the Indian automotive market.',
+                    details: [
+                        'Maruti Suzuki: 42% market share, 3,500+ touchpoints',
+                        'Hyundai: 15% share, strongest in premium segments',
+                        'Tata Motors: 13% share, leader in EVs and commercial vehicles',
+                        'Mahindra: 8% share, dominates utility vehicles',
+                        'Regional Strength: Different brands lead in different states'
+                    ]
+                }
+            ];
+
+            appData.caseStudies = [
+                {
+                    number: 1,
+                    title: 'Digital Transformation for Traditional OEM',
+                    category: 'digital',
+                    client: 'Leading European Luxury Automaker',
+                    problem: 'Client faced declining market share among younger buyers (25-35 age group) who preferred digital-first brands like Tesla. Traditional dealership model wasn\'t resonating with tech-savvy customers. Digital touchpoints were fragmented across 15+ legacy systems.',
+                    solution: 'Implemented unified digital platform connecting online configurator, virtual showrooms, home test drives, and seamless financing. Created end-to-end digital journey while maintaining dealer profitability through lead allocation and service revenue.',
+                    deliverables: [
+                        'Digital strategy roadmap with 3-year implementation plan',
+                        'Customer journey mapping across 27 touchpoints',
+                        'Technology architecture integrating CRM, DMS, and e-commerce',
+                        'Dealer training program for 250+ dealerships',
+                        'Performance dashboard with real-time metrics'
+                    ],
+                    frameworks: ['Customer Journey Mapping', 'Digital Maturity Model', 'Agile Implementation', 'Change Management'],
+                    impact: '35% increase in digital leads, 22% improvement in conversion rate, 18-month payback period',
+                    duration: '9 months'
+                },
+                {
+                    number: 2,
+                    title: 'Supply Chain Optimization Post-Pandemic',
+                    category: 'operations',
+                    client: 'Global OEM with Indian Manufacturing',
+                    problem: 'Semiconductor shortage and logistics disruptions caused 40% production loss. 250+ suppliers across 12 countries created vulnerability. Inventory carrying costs increased 60% due to buffer stock strategy.',
+                    solution: 'Redesigned supply chain with regional sourcing strategy, dual sourcing for critical components, and predictive analytics for demand planning. Reduced dependency on single-source semiconductors from 80% to 35%.',
+                    deliverables: [
+                        'Supplier risk assessment matrix for 500+ components',
+                        'Multi-sourcing strategy with 15 new local suppliers',
+                        'Demand forecasting model with machine learning',
+                        'Inventory optimization reducing working capital by ₹450 crores',
+                        'Crisis management playbook for future disruptions'
+                    ],
+                    frameworks: ['Risk Management Framework', 'Total Cost of Ownership', 'S&OP Process', 'Lean Supply Chain'],
+                    impact: 'Production recovery to 95%, ₹680 crore cost savings annually, 28% reduction in supply chain risk',
+                    duration: '6 months'
+                },
+                {
+                    number: 3,
+                    title: 'EV Strategy & Business Model Design',
+                    category: 'strategy',
+                    client: 'Indian Mass Market Automotive Leader',
+                    problem: 'Client needed to transition to EVs but faced unclear ROI, limited charging infrastructure, high battery costs (40% of vehicle cost), and customer range anxiety. Internal combustion engine expertise didn\'t translate to EVs.',
+                    solution: 'Developed phased EV rollout starting with commercial fleet segment. Created battery-as-a-service model reducing upfront cost by 30%. Partnered with charging networks and real estate developers for infrastructure.',
+                    deliverables: [
+                        'EV market sizing and segment prioritization',
+                        'Technology roadmap: battery chemistry, range, charging speed',
+                        'Go-to-market strategy for 4 vehicle segments',
+                        'Financial model for battery leasing business',
+                        'Partnership framework with energy and infrastructure players'
+                    ],
+                    frameworks: ['Porter\'s Five Forces', 'Platform Strategy', 'Real Options Analysis', 'Ecosystem Mapping'],
+                    impact: '₹5,000 crore investment approved, 50,000 EV sales target in year 1, first-mover advantage in fleet segment',
+                    duration: '12 months'
+                },
+                {
+                    number: 4,
+                    title: 'Dealer Network Profitability Improvement',
+                    category: 'sales',
+                    client: 'Japanese OEM India Operations',
+                    problem: '40% of 350 dealerships were unprofitable. Average ROI dropped from 22% to 8% in 3 years. Dealer attrition rate was 12% annually. Service revenue not growing despite increasing parc.',
+                    solution: 'Implemented dealer profitability model with clear KPIs. Introduced tiered incentive structure rewarding service absorption and customer satisfaction. Consolidated weak dealerships and invested in strong performers.',
+                    deliverables: [
+                        'Dealer profitability diagnostic for all 350 dealerships',
+                        'Revised dealer agreement with performance-based incentives',
+                        'Service process optimization reducing cost by 18%',
+                        'Digital lead management system improving conversion by 25%',
+                        'Dealer training academy with certification program'
+                    ],
+                    frameworks: ['Profit Pool Analysis', 'Benchmarking', 'Balanced Scorecard', 'Capability Building'],
+                    impact: 'Profitability improved in 280 dealerships, dealer ROI increased to 16%, attrition reduced to 4%',
+                    duration: '8 months'
+                },
+                {
+                    number: 5,
+                    title: 'Manufacturing Excellence Program',
+                    category: 'operations',
+                    client: 'Korean OEM Indian Plant',
+                    problem: 'Quality issues resulting in 58 defects per 100 vehicles (industry average 35). Production efficiency at 68% vs. benchmark 85%. High warranty costs at ₹8,500 per vehicle.',
+                    solution: 'Implemented total quality management program with root cause analysis for top 20 defects. Introduced poka-yoke (mistake-proofing) devices on assembly line. Enhanced supplier quality through source inspections.',
+                    deliverables: [
+                        'Quality improvement roadmap targeting 32 defects per 100 vehicles',
+                        'Kaizen program generating 2,500+ improvement ideas annually',
+                        'Supplier development program for 50 critical suppliers',
+                        'Statistical process control implementation across 200+ stations',
+                        'Quality culture training for 3,000+ manufacturing employees'
+                    ],
+                    frameworks: ['Six Sigma', 'Lean Manufacturing', 'Total Quality Management', 'DMAIC Methodology'],
+                    impact: 'Defects reduced to 34 per 100 vehicles, efficiency improved to 82%, warranty costs down to ₹5,200 per vehicle',
+                    duration: '15 months'
+                },
+                {
+                    number: 6,
+                    title: 'Customer Experience Transformation',
+                    category: 'sales',
+                    client: 'Premium European Brand India',
+                    problem: 'Net Promoter Score of 28 (vs. luxury average of 52). Customer complaints about service wait times, parts availability, and communication gaps. 40% of service customers never returned.',
+                    solution: 'Redesigned service journey with appointment scheduling, loaner vehicles, transparent pricing, and real-time status updates. Created customer experience team tracking all interactions.',
+                    deliverables: [
+                        'Customer experience blueprint across 32 touchpoints',
+                        'Service process redesign reducing wait time by 45%',
+                        'Parts forecasting model improving availability to 94%',
+                        'Mobile app for service booking and vehicle health monitoring',
+                        'Customer feedback loop with monthly action items'
+                    ],
+                    frameworks: ['Customer Journey Mapping', 'Voice of Customer', 'Service Design', 'NPS Methodology'],
+                    impact: 'NPS increased to 48, service retention improved to 75%, average revenue per customer up 32%',
+                    duration: '10 months'
+                },
+                {
+                    number: 7,
+                    title: 'Used Car Business Development',
+                    category: 'strategy',
+                    client: 'Mass Market Leader India',
+                    problem: 'Losing customers to independent used car dealers. No systematic remarketing strategy. Trade-in penetration only 15% vs. potential 40%. Missing revenue opportunity of ₹2,000+ crores.',
+                    solution: 'Launched certified pre-owned program with quality certification, warranty, and financing. Created 100+ dedicated used car outlets. Integrated with new car sales for seamless trade-ins.',
+                    deliverables: [
+                        'Business case and financial model for used car division',
+                        'Quality certification process with 150-point checklist',
+                        'Pricing algorithm based on age, mileage, condition, market demand',
+                        'Franchise model for used car outlets with ₹50 lakh investment',
+                        'Marketing strategy positioning certified pre-owned as smart choice'
+                    ],
+                    frameworks: ['Business Model Canvas', 'Market Entry Strategy', 'Value Proposition Design', 'Channel Strategy'],
+                    impact: '75,000 used cars sold in year 1, ₹1,200 crore revenue, trade-in rate increased to 38%',
+                    duration: '6 months'
+                },
+                {
+                    number: 8,
+                    title: 'Pricing Strategy Optimization',
+                    category: 'strategy',
+                    client: 'New Entrant in Indian SUV Market',
+                    problem: 'Price positioning unclear in crowded SUV segment. Competitors ranged from ₹8 lakhs to ₹25 lakhs. Customer willingness-to-pay research showed wide variation. Wrong pricing could kill product launch.',
+                    solution: 'Conducted conjoint analysis to understand feature-price tradeoffs. Developed competitive positioning map. Created tiered pricing strategy with strategic feature bundling.',
+                    deliverables: [
+                        'Market segmentation identifying 4 target customer groups',
+                        'Conjoint analysis with 2,500+ customer surveys',
+                        'Competitive positioning analysis of 12 SUV models',
+                        'Pricing recommendation: ₹12.5-17.8 lakhs across 6 variants',
+                        'Launch pricing strategy with introductory offers'
+                    ],
+                    frameworks: ['Conjoint Analysis', 'Competitive Positioning', 'Price Elasticity', 'Value-Based Pricing'],
+                    impact: 'Launch achieved 8,500 bookings in first month, optimal price realization of 98.5%, market share of 6% in year 1',
+                    duration: '4 months'
+                },
+                {
+                    number: 9,
+                    title: 'Electrification Roadmap for Commercial Vehicles',
+                    category: 'strategy',
+                    client: 'Leading CV Manufacturer',
+                    problem: 'Regulatory pressure for zero-emission vehicles in cities. High total cost of ownership for electric trucks. Limited charging infrastructure for commercial vehicles. Uncertain demand from fleet operators.',
+                    solution: 'Developed phased electrification starting with last-mile delivery vehicles, expanding to intercity buses, then heavy trucks. Created charging-as-a-service offering for fleet customers.',
+                    deliverables: [
+                        'Technology roadmap: battery, hydrogen, hybrid options',
+                        'Total cost of ownership model comparing electric vs. diesel',
+                        'Charging infrastructure plan for 50 cities',
+                        'Partnership strategy with logistics companies and fleet operators',
+                        'Government advocacy for subsidies and policy support'
+                    ],
+                    frameworks: ['Technology Adoption Lifecycle', 'TCO Analysis', 'Ecosystem Strategy', 'Policy Analysis'],
+                    impact: '₹8,000 crore investment approved, 10,000 electric CVs target by 2025, partnerships with 25 fleet operators',
+                    duration: '14 months'
+                },
+                {
+                    number: 10,
+                    title: 'After-Sales Revenue Growth',
+                    category: 'operations',
+                    client: 'Premium SUV Manufacturer',
+                    problem: 'Service absorption (service revenue as % of total dealer revenue) at 25% vs. target 45%. Customers going to independent garages after warranty. Parts margins being eroded by aftermarket alternatives.',
+                    solution: 'Introduced service packages, extended warranties, and accessories business. Improved service quality to retain customers post-warranty. Dynamic pricing based on vehicle age and usage.',
+                    deliverables: [
+                        'Service portfolio design: packages, contracts, pay-per-use',
+                        'Pricing strategy for 500+ service jobs and 10,000+ parts',
+                        'Customer retention program with loyalty points',
+                        'Technician training on latest vehicle technologies',
+                        'Parts supply chain optimization reducing lead time'
+                    ],
+                    frameworks: ['Revenue Management', 'Customer Lifetime Value', 'Retention Marketing', 'Service Operations'],
+                    impact: 'Service absorption increased to 42%, post-warranty retention improved from 35% to 58%, ₹650 per vehicle additional revenue',
+                    duration: '7 months'
+                }
+            ];
+
+            // Add 40 more case studies
+            const additionalCases = [
+                { number: 11, title: 'Market Entry Strategy for New Geography', category: 'strategy', client: 'Global OEM', problem: 'Planning entry into Southeast Asian market with limited local knowledge', solution: 'Market assessment, partner selection, and phased entry strategy', frameworks: ['Market Entry Analysis', 'Partnership Strategy', 'Risk Assessment'], impact: 'Successful launch in 3 countries, 12,000 units sold in year 1', duration: '8 months' },
+                { number: 12, title: 'Warranty Cost Reduction Program', category: 'operations', client: 'Mass Market OEM', problem: 'Warranty costs at 3.2% of revenue vs. industry benchmark 2.1%', solution: 'Root cause analysis and supplier quality improvement', frameworks: ['Pareto Analysis', 'FMEA', 'Cost-Benefit Analysis'], impact: 'Warranty costs reduced to 2.4%, saving ₹340 crores annually', duration: '12 months' },
+                { number: 13, title: 'Omnichannel Retail Strategy', category: 'sales', client: 'Luxury Car Brand', problem: 'Disconnect between online and offline customer experiences', solution: 'Integrated platform connecting digital touchpoints with physical showrooms', frameworks: ['Omnichannel Strategy', 'Customer Data Platform', 'Lead Management'], impact: 'Online-influenced sales increased from 12% to 48%', duration: '10 months' },
+                { number: 14, title: 'Mobility Services Platform', category: 'digital', client: 'Traditional Automaker', problem: 'Shifting from product to service model, competing with Uber/Ola', solution: 'Launched subscription and car-sharing services', frameworks: ['Platform Business Model', 'Service Design', 'Unit Economics'], impact: '25,000 subscribers in 18 months, new revenue stream of ₹450 crores', duration: '11 months' },
+                { number: 15, title: 'Inventory Optimization', category: 'operations', client: 'Multi-brand Dealer Group', problem: 'Carrying cost of ₹45 crores in slow-moving inventory', solution: 'Predictive analytics and dynamic ordering system', frameworks: ['Forecasting Models', 'Inventory Theory', 'Working Capital Management'], impact: 'Inventory reduced by 32%, carrying cost down to ₹31 crores', duration: '5 months' },
+                { number: 16, title: 'Product Portfolio Rationalization', category: 'strategy', client: 'Regional Player', problem: '24 variants across 3 models creating complexity and low margins', solution: 'Streamlined to 14 high-demand variants', frameworks: ['Portfolio Analysis', 'ABC Analysis', 'Complexity Costs'], impact: 'Manufacturing complexity reduced 40%, profitability improved 2.8 percentage points', duration: '6 months' },
+                { number: 17, title: 'Connected Vehicle Monetization', category: 'digital', client: 'Tech-Forward OEM', problem: 'Telematics installed but no clear business model', solution: 'Subscription-based features and data monetization strategy', frameworks: ['Subscription Economics', 'Data Strategy', 'Feature Tiering'], impact: '₹850 per vehicle annual revenue from connected services', duration: '9 months' },
+                { number: 18, title: 'Supplier Development Program', category: 'operations', client: 'Growing EV Manufacturer', problem: 'Local suppliers unable to meet EV component quality standards', solution: 'Capability building program for 30 key suppliers', frameworks: ['Supplier Capability Matrix', 'Technology Transfer', 'Quality Systems'], impact: 'Localization increased from 35% to 62%, cost reduction of 18%', duration: '18 months' },
+                { number: 19, title: 'Showroom Experience Redesign', category: 'sales', client: 'Emerging EV Brand', problem: 'Traditional showroom format not suitable for tech-focused brand', solution: 'Created experiential stores with immersive technology', frameworks: ['Retail Design', 'Experiential Marketing', 'Store Economics'], impact: 'Footfall increased 85%, conversion rate improved from 4% to 11%', duration: '7 months' },
+                { number: 20, title: 'Fleet Sales Strategy', category: 'sales', client: 'Commercial Vehicle OEM', problem: 'Corporate fleet segment underserved, losing to aggregators', solution: 'Dedicated fleet sales division with customized offerings', frameworks: ['B2B Sales Strategy', 'Account Management', 'Solution Selling'], impact: 'Fleet sales grew from 8% to 24% of total volume', duration: '8 months' },
+                { number: 21, title: 'Autonomous Driving Roadmap', category: 'strategy', client: 'Technology Leader', problem: 'Unclear path from ADAS to full autonomy', solution: 'Technology and regulatory roadmap for levels 2-4', frameworks: ['Technology Roadmapping', 'Regulatory Analysis', 'Partnership Strategy'], impact: 'Investment prioritization saving ₹2,000 crores, clear 5-year plan', duration: '6 months' },
+                { number: 22, title: 'Mergers & Acquisitions Strategy', category: 'strategy', client: 'Regional Consolidator', problem: 'Evaluating 8 potential acquisition targets', solution: 'Due diligence and integration planning for 2 strategic targets', frameworks: ['M&A Valuation', 'Synergy Analysis', 'Integration Planning'], impact: 'Successful acquisition adding ₹4,500 crores revenue', duration: '12 months' },
+                { number: 23, title: 'Carbon Neutrality Roadmap', category: 'operations', client: 'European OEM India', problem: 'Corporate commitment to carbon neutrality by 2030', solution: 'Comprehensive decarbonization strategy across value chain', frameworks: ['Carbon Accounting', 'Renewable Energy', 'Circular Economy'], impact: '40% emissions reduction in 3 years, roadmap to net zero', duration: '10 months' },
+                { number: 24, title: 'Personalization Engine', category: 'digital', client: 'Data-Driven OEM', problem: 'Generic marketing to all customers reducing effectiveness', solution: 'AI-powered personalization across digital channels', frameworks: ['Machine Learning', 'Customer Segmentation', 'Marketing Automation'], impact: 'Marketing ROI improved 3.2x, conversion rate up 67%', duration: '9 months' },
+                { number: 25, title: 'Service Speed Improvement', category: 'operations', client: 'Mass Market Leader', problem: 'Average service time 4.5 hours vs. customer expectation 2 hours', solution: 'Process reengineering and express service lanes', frameworks: ['Process Mapping', 'Lean Service', 'Queue Theory'], impact: 'Express service in 90 minutes, customer satisfaction +28 points', duration: '5 months' },
+                { number: 26, title: 'Ride-Hailing Partnership', category: 'strategy', client: 'Volume Player', problem: 'Missing growth in shared mobility segment', solution: 'Strategic partnership with ride-hailing platform', frameworks: ['Partnership Frameworks', 'Go-to-Market', 'Fleet Management'], impact: '50,000 vehicles deployed, new B2B2C channel established', duration: '7 months' },
+                { number: 27, title: 'Organizational Restructuring', category: 'operations', client: 'Traditional OEM', problem: 'Siloed organization slowing decision-making', solution: 'Agile operating model with cross-functional teams', frameworks: ['Organization Design', 'Agile Transformation', 'Change Management'], impact: 'Product development cycle reduced 30%, faster time-to-market', duration: '14 months' },
+                { number: 28, title: 'Export Strategy Development', category: 'strategy', client: 'Indian Manufacturer', problem: 'Domestic market saturated, need new growth avenues', solution: 'Export strategy for Africa and Latin America', frameworks: ['Export Strategy', 'Market Selection', 'Distribution Models'], impact: 'Exports grew from 2% to 18% of production', duration: '9 months' },
+                { number: 29, title: 'Battery Second Life Program', category: 'strategy', client: 'EV Pioneer', problem: 'Used EV batteries creating disposal challenge', solution: 'Repurposing batteries for energy storage', frameworks: ['Circular Economy', 'New Business Models', 'Reverse Logistics'], impact: 'New revenue stream, reduced disposal costs by ₹180 crores', duration: '8 months' },
+                { number: 30, title: 'Finance Penetration Strategy', category: 'sales', client: 'Finance Arm of OEM', problem: 'Only 45% of customers using captive finance vs. 70% target', solution: 'Competitive rate structure and digital loan processing', frameworks: ['Financial Product Design', 'Credit Scoring', 'Distribution Strategy'], impact: 'Finance penetration increased to 68%, ₹12,000 crore loan book', duration: '6 months' },
+                { number: 31, title: 'Safety Rating Improvement', category: 'operations', client: 'Budget Car Maker', problem: 'Poor crash test ratings affecting brand perception', solution: 'Safety enhancement program across portfolio', frameworks: ['Safety Engineering', 'Cost-Performance Tradeoff', 'Regulatory Compliance'], impact: '4-star safety rating achieved, safety perception improved 35%', duration: '11 months' },
+                { number: 32, title: 'Influencer Marketing Program', category: 'sales', client: 'Youth-Focused Brand', problem: 'Traditional marketing not resonating with Gen Z', solution: 'Comprehensive influencer and content marketing strategy', frameworks: ['Influencer Marketing', 'Content Strategy', 'Social Media Analytics'], impact: 'Brand awareness +42% in target demographic, cost per lead reduced 55%', duration: '4 months' },
+                { number: 33, title: 'Manufacturing Footprint Optimization', category: 'operations', client: 'Multi-Plant Manufacturer', problem: '5 plants with underutilized capacity and high costs', solution: 'Consolidated to 3 specialized plants', frameworks: ['Network Optimization', 'Make vs. Buy', 'Capacity Planning'], impact: 'Manufacturing cost reduced 22%, capital freed up ₹850 crores', duration: '15 months' },
+                { number: 34, title: 'Voice of Customer Program', category: 'sales', client: 'Quality-Focused Brand', problem: 'Product development disconnect from customer needs', solution: 'Systematic customer feedback integration', frameworks: ['Voice of Customer', 'Kano Model', 'QFD'], impact: 'Product satisfaction scores improved 31%, fewer post-launch changes', duration: '7 months' },
+                { number: 35, title: 'Aftermarket Parts Business', category: 'strategy', client: 'OEM with Aging Parc', problem: 'Missing out on aftermarket parts revenue', solution: 'Launched affordable aftermarket parts brand', frameworks: ['Brand Architecture', 'Channel Strategy', 'Pricing Strategy'], impact: '₹680 crore new revenue stream, protecting OEM parts business', duration: '8 months' },
+                { number: 36, title: 'Innovation Lab Setup', category: 'digital', client: 'Forward-Thinking OEM', problem: 'Slow to adopt emerging technologies', solution: 'Created innovation lab for rapid prototyping', frameworks: ['Innovation Management', 'Stage-Gate Process', 'Venture Building'], impact: '15 pilot projects launched, 3 scaled to production', duration: '10 months' },
+                { number: 37, title: 'Rural Market Penetration', category: 'sales', client: 'Two-Wheeler Leader', problem: 'Urban market saturated, rural untapped', solution: 'Rural distribution model with local entrepreneurs', frameworks: ['Market Development', 'Channel Innovation', 'Micro-Finance'], impact: 'Rural sales grew from 18% to 34% of total', duration: '12 months' },
+                { number: 38, title: 'Predictive Maintenance Platform', category: 'digital', client: 'Commercial Fleet Operator', problem: 'Unplanned breakdowns costing ₹250 crores annually', solution: 'IoT-based predictive maintenance system', frameworks: ['Predictive Analytics', 'IoT Platform', 'Maintenance Strategy'], impact: 'Breakdowns reduced 72%, maintenance costs down 28%', duration: '9 months' },
+                { number: 39, title: 'Employee Engagement Transformation', category: 'operations', client: 'Struggling Manufacturer', problem: 'High attrition (22%), low morale, productivity issues', solution: 'Comprehensive employee experience program', frameworks: ['Employee Journey', 'Culture Change', 'Engagement Analytics'], impact: 'Attrition reduced to 9%, productivity improved 18%', duration: '11 months' },
+                { number: 40, title: 'Trade-In Valuation Tool', category: 'digital', client: 'Used Car Division', problem: 'Inconsistent trade-in valuations, customer distrust', solution: 'AI-powered instant valuation tool', frameworks: ['Machine Learning', 'Pricing Algorithms', 'Digital Tools'], impact: 'Trade-in volume up 45%, valuation accuracy 94%', duration: '5 months' },
+                { number: 41, title: 'Charging Infrastructure Strategy', category: 'strategy', client: 'EV Ecosystem Player', problem: 'Range anxiety limiting EV adoption', solution: 'Public-private charging network development', frameworks: ['Infrastructure Planning', 'Partnership Models', 'Business Case'], impact: '500 charging stations deployed, enabling 100,000+ EV sales', duration: '18 months' },
+                { number: 42, title: 'Digital Showroom Platform', category: 'digital', client: 'Pandemic-Hit Dealer', problem: 'Lockdowns preventing physical showroom visits', solution: 'Virtual showroom with live consultant support', frameworks: ['Digital Channels', 'Remote Sales', 'Technology Platform'], impact: 'Sales maintained at 75% of pre-pandemic levels during lockdowns', duration: '3 months' },
+                { number: 43, title: 'Modular Platform Strategy', category: 'strategy', client: 'Cost-Conscious OEM', problem: 'High development costs for each new model', solution: 'Modular architecture shared across 6 models', frameworks: ['Platform Strategy', 'Modularity', 'Scale Economics'], impact: 'Development cost per model reduced 42%, time-to-market down 35%', duration: '24 months' },
+                { number: 44, title: 'Customer Data Platform', category: 'digital', client: 'Multi-Brand Organization', problem: 'Customer data siloed across 20+ systems', solution: 'Unified customer data platform with 360° view', frameworks: ['Data Architecture', 'Master Data Management', 'Analytics'], impact: 'Marketing effectiveness improved 2.8x, customer LTV increased 23%', duration: '10 months' },
+                { number: 45, title: 'Diversity & Inclusion Initiative', category: 'operations', client: 'Progressive Manufacturer', problem: 'Only 8% women in workforce, limited diversity', solution: 'Comprehensive D&I program with targets', frameworks: ['Diversity Strategy', 'Inclusive Culture', 'Talent Development'], impact: 'Women representation increased to 22%, innovation metrics improved', duration: '16 months' },
+                { number: 46, title: 'Subscription Model Design', category: 'strategy', client: 'Luxury Brand', problem: 'Younger buyers reluctant to commit to ownership', solution: 'All-inclusive subscription service', frameworks: ['Subscription Economics', 'Service Design', 'Customer Segments'], impact: '5,000 subscribers, average ₹35,000 monthly revenue per customer', duration: '7 months' },
+                { number: 47, title: 'Cybersecurity Enhancement', category: 'digital', client: 'Connected Vehicle OEM', problem: 'Vulnerability to hacking as vehicles become connected', solution: 'End-to-end cybersecurity framework', frameworks: ['Security Architecture', 'Risk Management', 'Compliance'], impact: 'Zero security incidents, customer confidence increased', duration: '12 months' },
+                { number: 48, title: 'Resale Value Optimization', category: 'strategy', client: 'Premium Brand', problem: 'Lower resale values than German competitors', solution: 'Certified pre-owned program and resale guarantee', frameworks: ['Residual Value Management', 'Brand Equity', 'Risk Management'], impact: 'Resale values improved 12%, enabling higher new car pricing', duration: '9 months' },
+                { number: 49, title: 'Smart Factory Implementation', category: 'operations', client: 'Modernizing Manufacturer', problem: 'Industry 4.0 capabilities lagging competition', solution: 'Digital twin and IoT sensors across production', frameworks: ['Industry 4.0', 'Digital Twin', 'Process Automation'], impact: 'OEE improved from 68% to 84%, quality defects reduced 40%', duration: '20 months' },
+                { number: 50, title: 'Voice of Dealer Program', category: 'sales', client: 'OEM with Dealer Friction', problem: 'Adversarial relationship with dealer network', solution: 'Collaborative forums and joint business planning', frameworks: ['Stakeholder Management', 'Win-Win Negotiation', 'Partnership'], impact: 'Dealer satisfaction +38 points, voluntary exits reduced 75%', duration: '8 months' }
+            ];
+
+            appData.caseStudies = appData.caseStudies.concat(additionalCases.map(c => ({
+                ...c,
+                deliverables: c.deliverables || [
+                    'Detailed analysis report',
+                    'Implementation roadmap',
+                    'Stakeholder presentation',
+                    'Change management plan'
+                ],
+                impact: c.impact,
+                problem: c.problem,
+                solution: c.solution
+            })));
+
+            appData.frameworks = [
+                {
+                    icon: '📊',
+                    title: 'Porter\'s Five Forces',
+                    description: 'Framework for analyzing competitive intensity and attractiveness of an industry.',
+                    usage: 'Market entry decisions, competitive strategy development, industry analysis',
+                    components: ['Competitive Rivalry', 'Supplier Power', 'Buyer Power', 'Threat of Substitution', 'Threat of New Entry']
+                },
+                {
+                    icon: '🎯',
+                    title: 'Value Chain Analysis',
+                    description: 'Identifies primary and support activities that create value in an organization.',
+                    usage: 'Cost optimization, competitive advantage identification, outsourcing decisions',
+                    components: ['Primary Activities (Operations, Marketing, Service)', 'Support Activities (Procurement, Technology, HR)']
+                },
+                {
+                    icon: '📈',
+                    title: 'BCG Growth-Share Matrix',
+                    description: 'Portfolio analysis tool categorizing business units or products.',
+                    usage: 'Product portfolio decisions, resource allocation, investment prioritization',
+                    components: ['Stars (High Growth, High Share)', 'Cash Cows', 'Question Marks', 'Dogs']
+                },
+                {
+                    icon: '🔄',
+                    title: 'Customer Journey Mapping',
+                    description: 'Visual representation of customer experience across all touchpoints.',
+                    usage: 'Experience design, pain point identification, omnichannel strategy',
+                    components: ['Touchpoints', 'Customer Emotions', 'Opportunities', 'Moments of Truth']
+                },
+                {
+                    icon: '⚙️',
+                    title: 'Lean Six Sigma',
+                    description: 'Methodology combining lean manufacturing and Six Sigma for process improvement.',
+                    usage: 'Quality improvement, waste reduction, process optimization',
+                    components: ['DMAIC (Define, Measure, Analyze, Improve, Control)', 'Value Stream Mapping', 'Root Cause Analysis']
+                },
+                {
+                    icon: '🎨',
+                    title: 'Business Model Canvas',
+                    description: 'Strategic tool for developing and documenting business models.',
+                    usage: 'New business model design, innovation, strategic planning',
+                    components: ['Value Proposition', 'Customer Segments', 'Channels', 'Revenue Streams', 'Cost Structure']
+                },
+                {
+                    icon: '🔍',
+                    title: 'SWOT Analysis',
+                    description: 'Evaluation of Strengths, Weaknesses, Opportunities, and Threats.',
+                    usage: 'Strategic planning, competitive positioning, risk assessment',
+                    components: ['Internal: Strengths & Weaknesses', 'External: Opportunities & Threats']
+                },
+                {
+                    icon: '💡',
+                    title: 'Design Thinking',
+                    description: 'Human-centered approach to innovation and problem-solving.',
+                    usage: 'Product development, service design, innovation projects',
+                    components: ['Empathize', 'Define', 'Ideate', 'Prototype', 'Test']
+                },
+                {
+                    icon: '📊',
+                    title: 'Balanced Scorecard',
+                    description: 'Performance management framework linking strategy to operational metrics.',
+                    usage: 'Performance management, strategic alignment, KPI development',
+                    components: ['Financial', 'Customer', 'Internal Process', 'Learning & Growth']
+                },
+                {
+                    icon: '🎯',
+                    title: 'Ansoff Growth Matrix',
+                    description: 'Framework for analyzing growth strategies based on products and markets.',
+                    usage: 'Growth strategy, market expansion decisions, product development',
+                    components: ['Market Penetration', 'Market Development', 'Product Development', 'Diversification']
+                },
+                {
+                    icon: '🔗',
+                    title: 'Ecosystem Mapping',
+                    description: 'Visualizing interconnected stakeholders in a business ecosystem.',
+                    usage: 'Partnership strategy, platform business models, value network analysis',
+                    components: ['Core Partners', 'Complementors', 'Competitors', 'Value Flow']
+                },
+                {
+                    icon: '💰',
+                    title: 'Total Cost of Ownership',
+                    description: 'Comprehensive assessment of all costs associated with an asset.',
+                    usage: 'Purchase decisions, vendor selection, investment analysis',
+                    components: ['Acquisition Costs', 'Operating Costs', 'Maintenance', 'Disposal']
+                },
+                {
+                    icon: '🚀',
+                    title: 'Agile Methodology',
+                    description: 'Iterative approach to project management and product development.',
+                    usage: 'Software development, product launches, fast-paced projects',
+                    components: ['Sprints', 'Scrum', 'User Stories', 'Retrospectives']
+                },
+                {
+                    icon: '📱',
+                    title: 'Digital Maturity Model',
+                    description: 'Assessment framework for digital transformation readiness.',
+                    usage: 'Digital transformation planning, capability assessment, roadmap development',
+                    components: ['Strategy', 'Technology', 'Operations', 'Culture', 'Customers']
+                },
+                {
+                    icon: '🎭',
+                    title: 'Persona Development',
+                    description: 'Creating detailed profiles of target customer archetypes.',
+                    usage: 'Marketing strategy, product design, customer experience',
+                    components: ['Demographics', 'Behaviors', 'Goals', 'Pain Points', 'Journey']
+                }
+            ];
+
+            renderAllSections();
+        }
+
+        function renderAllSections() {
+            renderValueChain();
+            renderJourneySteps();
+            renderIndiaInsights();
+            renderCaseStudies('all');
+            renderFrameworks();
+        }
+
+        function renderValueChain() {
+            const grid = document.getElementById('valueChainGrid');
+            grid.innerHTML = appData.valueChain.map(item => `
+                <div class="vc-card">
+                    <div class="vc-icon">${item.icon}</div>
+                    <h3 class="vc-title">${item.title}</h3>
+                    <p class="vc-description">${item.description}</p>
+                    <div class="vc-details">
+                        ${item.details.map(d => `<div class="detail-item">${d}</div>`).join('')}
+                    </div>
+                    ${item.example ? `<div class="vc-details" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                        <strong style="color: var(--success);">Real-World Example:</strong><br>${item.example}
+                    </div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function renderJourneySteps() {
+            const grid = document.getElementById('journeyDetails');
+            grid.innerHTML = appData.journeySteps.map(item => `
+                <div class="vc-card">
+                    <div class="vc-icon">${item.icon}</div>
+                    <h3 class="vc-title">${item.title}</h3>
+                    <p class="vc-description">${item.description}</p>
+                    <div class="vc-details">
+                        ${item.details.map(d => `<div class="detail-item">${d}</div>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderIndiaInsights() {
+            const grid = document.getElementById('indiaInsights');
+            grid.innerHTML = appData.indiaInsights.map(item => `
+                <div class="vc-card">
+                    <div class="vc-icon">${item.icon}</div>
+                    <h3 class="vc-title">${item.title}</h3>
+                    <p class="vc-description">${item.description}</p>
+                    <div class="vc-details">
+                        ${item.details.map(d => `<div class="detail-item">${d}</div>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderCaseStudies(filter) {
+            const grid = document.getElementById('caseStudiesGrid');
+            const filtered = filter === 'all' 
+                ? appData.caseStudies 
+                : appData.caseStudies.filter(c => c.category === filter);
+
+            grid.innerHTML = filtered.map(cs => `
+                <div class="case-card" onclick="showCaseDetail(${cs.number})">
+                    <span class="case-number">Case #${cs.number}</span>
+                    <h3 class="case-title">${cs.title}</h3>
+                    <div class="case-meta">
+                        <span class="meta-tag">${cs.category.toUpperCase()}</span>
+                        <span class="meta-tag">${cs.duration || '6-12 months'}</span>
+                    </div>
+                    <div class="case-problem">
+                        <div class="case-label">Problem</div>
+                        <div>${cs.problem}</div>
+                    </div>
+                    <div class="case-solution">
+                        <div class="case-label">Solution</div>
+                        <div>${cs.solution}</div>
+                    </div>
+                    <button class="expand-btn">View Full Case Study →</button>
+                </div>
+            `).join('');
+        }
+
+        function renderFrameworks() {
+            const grid = document.getElementById('frameworksGrid');
+            grid.innerHTML = appData.frameworks.map(fw => `
+                <div class="vc-card">
+                    <div class="vc-icon">${fw.icon}</div>
+                    <h3 class="vc-title">${fw.title}</h3>
+                    <p class="vc-description">${fw.description}</p>
+                    <div class="vc-details">
+                        <div class="detail-item"><strong>When to Use:</strong> ${fw.usage}</div>
+                        <div class="detail-item"><strong>Key Components:</strong> ${fw.components.join(', ')}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.toggle('active');
+            }
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(sectionId).classList.add('active');
+            event.target.closest('.nav-item').classList.add('active');
+            
+            // Close sidebar on mobile after selection
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        }
+
+        function filterCases(category) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            renderCaseStudies(category);
+        }
+
+        function showCaseDetail(caseNumber) {
+            const caseStudy = appData.caseStudies.find(c => c.number === caseNumber);
+            const modal = document.getElementById('caseModal');
+            const content = document.getElementById('modalContent');
+
+            content.innerHTML = `
+                <span class="case-number">Case Study #${caseStudy.number}</span>
+                <h2 class="case-title" style="margin-top: 1rem;">${caseStudy.title}</h2>
+                <div class="case-meta" style="margin: 1.5rem 0;">
+                    <span class="meta-tag">${caseStudy.category.toUpperCase()}</span>
+                    <span class="meta-tag">${caseStudy.client || 'Confidential Client'}</span>
+                    <span class="meta-tag">${caseStudy.duration || '6-12 months'}</span>
+                </div>
+
+                <div class="case-problem" style="margin: 2rem 0;">
+                    <div class="case-label">Problem Statement</div>
+                    <div>${caseStudy.problem}</div>
+                </div>
+
+                <div class="case-solution" style="margin: 2rem 0;">
+                    <div class="case-label">Solution Approach</div>
+                    <div>${caseStudy.solution}</div>
+                </div>
+
+                ${caseStudy.deliverables ? `
+                <div style="margin: 2rem 0;">
+                    <div class="case-label" style="margin-bottom: 1rem;">Key Deliverables</div>
+                    ${caseStudy.deliverables.map(d => `<div class="detail-item">${d}</div>`).join('')}
+                </div>
+                ` : ''}
+
+                ${caseStudy.frameworks ? `
+                <div style="margin: 2rem 0;">
+                    <div class="case-label" style="margin-bottom: 1rem;">Frameworks Used</div>
+                    <div class="framework-list">
+                        ${caseStudy.frameworks.map(f => `<div class="framework-tag">${f}</div>`).join('')}
+                    </div>
+                </div>
+                ` : ''}
+
+                ${caseStudy.impact ? `
+                <div class="case-solution" style="margin: 2rem 0; background: rgba(6, 255, 165, 0.1); border-left-color: var(--success);">
+                    <div class="case-label">Impact & Results</div>
+                    <div>${caseStudy.impact}</div>
+                </div>
+                ` : ''}
+            `;
+
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('caseModal').classList.remove('active');
+        }
+
+        // Excel Upload Handler
+        // Close modal on outside click
+        document.getElementById('caseModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        // Initialize on load
+        window.addEventListener('load', initializeData);
+    </script>
+</body>
+</html>
